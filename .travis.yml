@@ -1,0 +1,42 @@
+# vim: ts=2:sts=2:sw=2:et
+
+language: android
+dist: trusty
+sudo: false
+
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-28.0.3
+    - android-26
+    - android-27
+
+jdk: oraclejdk8
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.android/build-cache
+
+script: /bin/bash ./gradlew assembleFlossDebug
+
+before_deploy:
+  - git config --local user.name "Cédric Schieli"
+  - git config --local user.email "cschieli@gmail.com"
+  - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+  - git tag $TRAVIS_TAG
+deploy:
+  provider: releases
+  api_key:
+    secure: BnSOZvZoyfnJN6CVi78NXrwh+d7ljCtW2HGzgRobSoRrOfFW7j0uVoilA0L/au4MgVc1u7GaNRd3Mdzo4VDxRDxr41jl2DR9Vg7/RVFpr++5gLqRz33E15IiVs0N4ohwqds8LyuYTcPf59d1WYA8CcF5TB0zMzVrTRV0k0NNK31h8AIEhH9rKg77zBSnkxHsM/FQVXZJGJMjCdIDc829s8P4JQcbxsGyqZ0SDGgpfXQ/aGgUcsDGg5Dk6PR1DPyy1HAvHDwgyBdQJS8gcLRH2PdhVzRI/FLCSiqSCTbwrxWuorjHpy5jE1A98YyrOhlYMiFt0z3btdra9R8QjiWtQu2FbHnqSR6hoyON4ewIjdS57WU0vTz5XAkL1XRVimvM4nrMBCBBFIQn/BRo9DfTDsfNckVppfRQoU13el3bXBgeN93OfGWSYPsimNs+PuhfSPN0GMFNLQLOF1ShfhJUFswXZ4jVa3PnOo9Mprq7/rKoHzq1fjsNwWXSfI/FKbHv4JcYOuSsA12+VBcuJrSabVw3eUPoiE2t7fWt4q+y+CUDwmA09vraBGlNYNziAOcLtCLQdvIfFAh9ZR9ZUfeX8i/ICzGvD8PyQhRUdBuD8OEuBgLBW4ZteqB39YvWGOj6Lxxf8U1o2ePTWwwCl2o2HOy4eTrQRZ5H9l3UssfDS5s=
+  file_glob: true
+  file: app/build/outputs/apk/floss/debug/*.apk
+  skip_cleanup: true
+  draft: true
+  on:
+    branch: edge
